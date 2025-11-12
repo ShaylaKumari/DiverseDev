@@ -23,5 +23,3 @@ console.log("Menor nota:", menorNota);
 
 let diferenca = (maiorNota - menorNota);
 console.log("Diferença entre maior e menor nota:", diferenca);
-
-
