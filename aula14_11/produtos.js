@@ -20,11 +20,10 @@ const aplicarDesconto = produtos =>
 const filtrarAcimaDe50 = produtos =>
     produtos.filter(p => p.preco > 50);
 
-const TotalEstoque = calcularTotalEstoque(produtos);
+const totalEstoque = calcularTotalEstoque(produtos);
 const produtosComDesconto = aplicarDesconto(produtos);
 const produtosAcimaDe50 = filtrarAcimaDe50(produtosComDesconto);
 
-
-console.log("Preço total do estoque dos produtos:", TotalEstoque);
+console.log("Preço total do estoque dos produtos:", totalEstoque);
 console.log("Produtos com desconto:", produtosComDesconto);
 console.log("Produtos acima de R$ 50,00 com desconto:", produtosAcimaDe50);
