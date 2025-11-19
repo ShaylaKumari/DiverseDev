@@ -1,0 +1,25 @@
+MÓDULO I - LÓGICA DE PROGRAMAÇÃO
+
+Sistema de Tipos (type system) da linguagem
+Estados
+Constantes e Variáveis (valores únicos) e sua relação com o conceito matemático
+Uso de funções nativas da linguagem
+Coerções (mudança de tipos)
+Operadores e aritmética
+Vetores e Matrizes (valores múltiplos) e sua relação com o conceito matemático
+Dicionários / Objetos
+Quebra de fluxo e tomada de decisão
+Condicionais IF/ELSE
+Condicionais SWITCH
+Condicional ternário (? :)
+Operadores de Coalescência (?? e ?.)
+Conceito de Truthy/Falsy
+Operadores Lógicos (&& ||)
+Laços de repetição condicionais (WHILE DO-WHILE)
+Laços de repetição numéricos (FOR, FOR-IN, FOR-OF)
+Busca simples em vetores e matrizes
+Funções e assinaturas
+Parametrização de funções
+Composição e encadeamento (pipe) de funções
+Funções de alta-ordem
+Tratamento de erros try-catch-finally
