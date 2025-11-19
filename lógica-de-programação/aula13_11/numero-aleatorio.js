@@ -1,3 +1,5 @@
+// Proposta: Programa para adivinhar número --- Gerar o número aleatório de 0 a 100, utilização de prompt para entrada de dados, comparação de número aleatório com o palpite, retorno se o palpite é menor/maior/igual ao número aleatório, encerrar após acerto.
+
 let numeroAleatorio = Math.floor(Math.random() * 101);
 console.log(numeroAleatorio);
 

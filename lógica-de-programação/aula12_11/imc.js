@@ -1,3 +1,5 @@
+// Proposta: Calcular IMC do indivíduo. 
+
 let peso = prompt("Digite seu peso: ");
 let altura = prompt("Digite sua altura: ");
 

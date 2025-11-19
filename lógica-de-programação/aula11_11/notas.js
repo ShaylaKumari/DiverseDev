@@ -1,3 +1,5 @@
+// Proposta: Notas do aluno --- média aritmética, média ponderada, médias arredondadas, maior nota, menor nota e diferença entre notas.
+
 let notas = [7.5, 8.0, 6.5, 9.0, 5.5];
 let pesos = [2, 3, 1, 4, 2];
 console.log("Notas:", notas);

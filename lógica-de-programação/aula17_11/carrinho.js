@@ -1,3 +1,5 @@
+// Proposta: Carrinho de compras --- Usuário pode incluir itens no carrinho de compras, exibir quantidade de cada item, calcular preço, adicionar e remover itens, armazenar no localstorage.
+
 const itens = [
     { id: 1, nome: "carregador", preco: 50 },
     { id: 2, nome: "fone", preco: 120 },

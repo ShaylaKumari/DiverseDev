@@ -1,3 +1,5 @@
+// Proposta: Estoque do produto --- Calcular preço total do estoque do produto, aplicar 10% de desconto, filtrar produtos com preço acima de R$ 50,00
+
 const produtos = [
     { nome: "camisa", preco: 80, quantidade: 15 },
     { nome: "calça", preco: 120, quantidade: 10 },

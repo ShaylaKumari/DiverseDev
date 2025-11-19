@@ -1,3 +1,5 @@
+// Proposta: Validação de senha --- Senha com pelo menos 8 caracteres, 1 número, 1 caractere especial e 1 letra maiúscula.
+
 const validarSenha = (senha) => {
     const validaNumero = /[0-9]/.test(senha);
     const validaMaiuscula = /[A-Z]/.test(senha);

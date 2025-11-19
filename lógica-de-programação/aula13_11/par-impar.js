@@ -1,3 +1,5 @@
+// Proposta: Par ou ímpar --- Exibir quantidade de números pares e ímpares, soma dos pares e soma dos ímpares, listar números primos.
+
 let numeros = [3, 7, 8, 10, 13, 17, 20];
 
 let pares = 0;

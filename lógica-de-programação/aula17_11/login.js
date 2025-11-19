@@ -1,3 +1,5 @@
+// Proposta: Sistema de login --- Entrada de dados via prompt, verificação de campos (campos preenchidos, email com @, senha com 8 caracteres, se o login existe, se a senha está correta).
+
 const usuarios = [
     { email: "ananda@hotmail.com", senha: "ananda123" },
     { email: "shayla@hotmail.com", senha: "shayla123" },
