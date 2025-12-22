@@ -1,0 +1,35 @@
+-- Inserção e visualização das contas
+insert into conta (cpf, email, senha, data_vencimento, id_plano) 
+values
+('01478529631', 'joao@gmail.com', 'senha123', '2026-01-07', 1),
+('12345678910', 'maria@gmail.com', 'senha321', '2026-02-07', 2),
+('10987654321', 'jose@gmail.com', 'senha456', '2025-12-28', 3),
+('98765432100', 'ana@gmail.com', 'senha789', '2026-01-15', 1),
+('45678912300', 'carlos@gmail.com', 'senhaabc', '2026-02-10', 2),
+('32165498700', 'paula@gmail.com', 'senhaxyz', '2025-12-30', 3),
+('74185296300', 'roberto@gmail.com', 'senha111', '2026-01-20', 1),
+('85296374100', 'fernanda@gmail.com', 'senha222', '2026-02-18', 2),
+('96374185200', 'luiz@gmail.com', 'senha333', '2025-12-25', 3),
+('15975348600', 'camila@gmail.com', 'senha444', '2026-01-09', 1),
+('25836914700', 'bruno@gmail.com', 'senha555', '2026-02-12', 2),
+('35795146800', 'aline@gmail.com', 'senha666', '2025-12-27', 3),
+('45612378900', 'diego@gmail.com', 'senha777', '2026-01-14', 1),
+('65478932100', 'patricia@gmail.com', 'senha888', '2026-02-08', 2),
+('78932165400', 'rafael@gmail.com', 'senha999', '2025-12-29', 3),
+('95175385200', 'beatriz@gmail.com', 'senha000', '2026-01-22', 1),
+('14725836900', 'thiago@gmail.com', 'senhaaaa', '2026-02-14', 2),
+('36925814700', 'natalia@gmail.com', 'senhabbb', '2025-12-26', 3),
+('75315948600', 'andre@gmail.com', 'senhaccc', '2026-01-11', 1),
+('85214796300', 'larissa@gmail.com', 'senhaddd', '2026-02-16', 2),
+('96385274100', 'eduardo@gmail.com', 'senhaeee', '2025-12-24', 3),
+('11122233344', 'monica@gmail.com', 'senhafff', '2026-01-18', 1),
+('22233344455', 'ricardo@gmail.com', 'senhaggg', '2026-02-20', 2),
+('33344455566', 'vanessa@gmail.com', 'senhahhh', '2025-12-31', 3),
+('44455566677', 'felipe@gmail.com', 'senhaiii', '2026-01-25', 1),
+('55566677788', 'juliana@gmail.com', 'senhajjj', '2026-02-05', 2),
+('66677788899', 'gustavo@gmail.com', 'senhakkk', '2025-12-23', 3),
+('77788899900', 'renata@gmail.com', 'senhalll', '2026-01-30', 1),
+('88899900011', 'leonardo@gmail.com', 'senhamm', '2026-02-03', 2),
+('99900011122', 'sabrina@gmail.com', 'senhaooo', '2025-12-22', 3);
+
+select * from conta;

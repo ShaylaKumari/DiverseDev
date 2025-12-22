@@ -1,0 +1,35 @@
+-- Inserção e visualização dos filmes
+insert into filme (titulo, sinopse, ano_lancamento, duracao, classificacao_indicativa) 
+values
+('A Origem dos Sonhos', 'Um ladrao invade sonhos para realizar um ultimo trabalho e recuperar sua vida', 2010, 148, '14'),
+('Caminhos do Destino', 'Tres historias se cruzam em uma cidade marcada por escolhas dificeis', 2008, 112, '12'),
+('Alem do Horizonte', 'Um astronauta enfrenta o desconhecido para salvar a humanidade', 2015, 134, '12'),
+('Sombras da Noite', 'Um detetive investiga crimes misteriosos em uma cidade perigosa', 2006, 121, '16'),
+('Aventura na Floresta', 'Amigos vivem uma jornada cheia de desafios na selva', 2003, 98, 'Livre'),
+('Lacos de Familia', 'Conflitos e reconciliacoes marcam a vida de uma familia brasileira', 2009, 105, '12'),
+('Codigo Final', 'Um hacker tenta impedir um ataque digital de grandes proporcoes', 2018, 110, '14'),
+('O Ultimo Guerreiro', 'Um soldado luta para proteger seu povo em tempos de guerra', 2001, 130, '14'),
+('Entre Dois Mundos', 'Uma jovem descobre a ligacao entre o world real e o espiritual', 2012, 117, '12'),
+('Risos e Confusoes', 'Uma comedia sobre situacoes absurdas do cotidiano', 2005, 95, 'Livre'),
+('Cidade em Chamas', 'Uma investigacao revela violencia e corrupcao urbana', 2019, 125, '18'),
+('O Misterio do Lago', 'Eventos estranhos cercam um lago isolado', 2007, 102, '12'),
+('Herois Anonimos', 'Pessoas comuns se tornam herois em situacoes extremas', 2014, 108, '12'),
+('No Limite do Medo', 'Um casal enfrenta acontecimentos aterradores em uma casa antiga', 2016, 100, '16'),
+('Tempo de Recomecar', 'Um homem busca um novo sentido para a vida apos uma perda', 2004, 109, '10'),
+('A Jornada Encantada', 'Uma animacao sobre amizade e superacao em um mundo magico', 2011, 92, 'Livre'),
+('Vidas Cruzadas', 'Dramas pessoais se entrelacam em uma grande metropole', 2002, 118, '14'),
+('O Preco da Verdade', 'Um jornalista arrisca tudo para revelar uma grande fraude', 2020, 122, '14'),
+('Alem da Lei', 'Um policial enfrenta dilemas morais ao combater o crime', 2008, 115, '16'),
+('Segredos do Passado', 'Um misterio antigo volta a tona apos decadas', 1999, 107, '12'),
+('Destino Final', 'Pessoas tentam escapar de eventos tragicos previstos', 2000, 98, '16'),
+('Rota de Fuga', 'Um prisioneiro planeja uma fuga arriscada', 2013, 107, '14'),
+('Silencio Mortal', 'Uma cidade enfrenta uma serie de crimes inexplicaveis', 2017, 111, '16'),
+('Coragem Verdadeira', 'Uma jovem enfrenta grandes desafios para salvar sua familia', 2010, 104, '12'),
+('O Ultimo Voo', 'Sobreviventes lutam apos a queda de um aviao', 2006, 113, '14'),
+('Som do Coracao', 'Um musico redescobre sua paixao pela vida', 2001, 99, '10'),
+('Sombras do Passado', 'Um investigador revisita um caso nao resolvido', 2014, 120, '14'),
+('Fronteira Final', 'Exploradores espaciais buscam um novo lar para a humanidade', 2021, 136, '12'),
+('Olhos da Verdade', 'Uma advogada enfrenta um sistema injusto', 2018, 119, '12'),
+('Jogo de Mentiras', 'Um grupo se envolve em uma perigosa rede de segredos', 2015, 114, '16');
+
+select * from filme;
