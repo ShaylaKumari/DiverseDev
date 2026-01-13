@@ -1,0 +1,308 @@
+{
+  "name": "CEP - Aula 07.01.26",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "3e1e45cd-2bd3-4ad9-ba13-814b4a7426e0",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1L2Aj76ywtMiW7Lkj9zfBnIxr9sLpxGUWNJRHjrGvxm4",
+          "mode": "list",
+          "cachedResultName": "CEPS",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1L2Aj76ywtMiW7Lkj9zfBnIxr9sLpxGUWNJRHjrGvxm4/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Folha1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1L2Aj76ywtMiW7Lkj9zfBnIxr9sLpxGUWNJRHjrGvxm4/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        208,
+        0
+      ],
+      "id": "f855426b-bcc3-450d-8ba5-20c869368538",
+      "name": "Receber CEPs da Planilha",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "uVJm4EoPptoNDJyX",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "8072cdaa-a744-45c2-b8fe-5474cfc549db",
+              "name": "CEP",
+              "value": "={{ $json.CEP.replaceAll('-', '') }}",
+              "type": "string"
+            },
+            {
+              "id": "f0115c16-34a8-4f35-9097-d564a114fd4e",
+              "name": "nome",
+              "value": "={{ $json.nome }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        416,
+        0
+      ],
+      "id": "8a42b802-d0a7-4e0a-ae97-82be96df19b4",
+      "name": "Tratar Ceps"
+    },
+    {
+      "parameters": {
+        "url": "=http://viacep.com.br/ws/{{ $json.CEP }}/json/",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        624,
+        0
+      ],
+      "id": "c4b7c627-f536-4aa8-9101-dfb682639c3b",
+      "name": "Requisição API ViaCep"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "b20a1fbd-328b-4075-99ff-1abf5e77a9e9",
+              "name": "logradouro",
+              "value": "={{ $json.logradouro }}",
+              "type": "string"
+            },
+            {
+              "id": "e9478718-8a0c-44f8-bf43-5385879bfb8b",
+              "name": "bairro",
+              "value": "={{ $json.bairro }}",
+              "type": "string"
+            },
+            {
+              "id": "187cf237-35a5-48ee-a868-0dc592d60a43",
+              "name": "localidade",
+              "value": "={{ $json.localidade }}",
+              "type": "string"
+            },
+            {
+              "id": "6947b7fb-441b-44c1-b19a-2f80c6bd5ca3",
+              "name": "uf",
+              "value": "={{ $json.uf }}",
+              "type": "string"
+            },
+            {
+              "id": "0c35c456-dd01-4fd5-867f-d306889eb1e9",
+              "name": "nome",
+              "value": "={{ $('Tratar Ceps').item.json.nome }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        832,
+        0
+      ],
+      "id": "7f6d216e-227d-446b-aad7-92d8cae16c1e",
+      "name": "Tratar dados retornados"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1L2Aj76ywtMiW7Lkj9zfBnIxr9sLpxGUWNJRHjrGvxm4",
+          "mode": "list",
+          "cachedResultName": "CEPS",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1L2Aj76ywtMiW7Lkj9zfBnIxr9sLpxGUWNJRHjrGvxm4/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1971618186,
+          "mode": "list",
+          "cachedResultName": "Folha2",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1L2Aj76ywtMiW7Lkj9zfBnIxr9sLpxGUWNJRHjrGvxm4/edit#gid=1971618186"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "nome": "={{ $json.nome }}",
+            "logradouro": "={{ $json.logradouro }}",
+            "bairro": "={{ $json.bairro }}",
+            "uf": "={{ $json.uf }}",
+            "localidade": "={{ $json.localidade }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "nome",
+              "displayName": "nome",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "logradouro",
+              "displayName": "logradouro",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "bairro",
+              "displayName": "bairro",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "localidade",
+              "displayName": "localidade",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "uf",
+              "displayName": "uf",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1040,
+        0
+      ],
+      "id": "2c85771c-e6b1-4e17-b32a-60e76021c582",
+      "name": "Inserir dados na planilha",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "uVJm4EoPptoNDJyX",
+          "name": "Google Sheets account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Receber CEPs da Planilha",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Receber CEPs da Planilha": {
+      "main": [
+        [
+          {
+            "node": "Tratar Ceps",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tratar Ceps": {
+      "main": [
+        [
+          {
+            "node": "Requisição API ViaCep",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Requisição API ViaCep": {
+      "main": [
+        [
+          {
+            "node": "Tratar dados retornados",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tratar dados retornados": {
+      "main": [
+        [
+          {
+            "node": "Inserir dados na planilha",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "12315182-053d-4d35-b664-26614bf12c3e",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "8e49680a09686df7fb33f428974679a4ab99abc4f230d39ca1abd80d09a3a25e"
+  },
+  "id": "UsBqsPM2rxDrfyQUfJBp8",
+  "tags": []
+}

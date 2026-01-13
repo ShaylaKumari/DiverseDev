@@ -1,0 +1,456 @@
+{
+  "name": "WF02 - Relatório Semanal",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "weeks",
+              "triggerAtDay": [
+                5
+              ],
+              "triggerAtHour": 9
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        0,
+        0
+      ],
+      "id": "0e714839-c1b5-4223-81ee-119451d249f2",
+      "name": "Agendamento Automático"
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = new Date();\nconst dia = data.getDate();\nconst primeiroDiaMes = new Date(data.getFullYear(), data.getMonth(), 1);\nconst diaSemanaPrimeiroDia = primeiroDiaMes.getDay();\nconst semana = Math.ceil((dia + diaSemanaPrimeiroDia) / 7);\n\nreturn [{\n  json: {\n    semana\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        208,
+        0
+      ],
+      "id": "d3b892b9-3e05-4123-b2f0-5783e27d9bbe",
+      "name": "Calcular Semana"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "14ZlDeDekoQk0XxKG-AN0ZUYnsmpQ6nmVU-o1XTIsFs8",
+          "mode": "list",
+          "cachedResultName": "Feedback Anônimo - Empresa Mercado Eletrônico",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/14ZlDeDekoQk0XxKG-AN0ZUYnsmpQ6nmVU-o1XTIsFs8/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 979418260,
+          "mode": "list",
+          "cachedResultName": "Dados Tratados",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/14ZlDeDekoQk0XxKG-AN0ZUYnsmpQ6nmVU-o1XTIsFs8/edit#gid=979418260"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "semana",
+              "lookupValue": "={{ $json.semana }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        416,
+        0
+      ],
+      "id": "adc63c4c-4ad0-42e3-abdf-434709d679cf",
+      "name": "Extrair Dados Semanal",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "uVJm4EoPptoNDJyX",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const rows = items.map(i => i.json);\n\nconst semana = rows[0]?.semana;\nconst empresa = rows[0]?.empresa;\n\nconst total = rows.length;\n\n// contadores\nconst countBy = (key) =>\n  rows.reduce((acc, r) => {\n    acc[r[key]] = (acc[r[key]] || 0) + 1;\n    return acc;\n  }, {});\n\nconst tipos = countBy(\"tipo_classificado\");\n\nconst sentimentos = countBy(\"sentimento\");\n\nconst setores = countBy(\"setor\");\n\nconst temas = countBy(\"tema_principal\");\n\nconst criticidade = countBy(\"criticidade\");\n\nconst criticos = rows.filter(r => r.criticidade === \"alta\");\n\nconst resumos = rows.map(r => r.resumo_executivo);\n\nconst insights = rows.map(r => r.insight_acionavel);\n\nreturn [{\n  json: {\n    semana,\n    empresa,\n    total_feedbacks: total,\n    tipos,\n    sentimentos,\n    setores,\n    temas,\n    criticidade,\n    quantidade_criticos: criticos.length,\n    resumos,\n    insights\n  }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        608,
+        0
+      ],
+      "id": "177df7e6-505b-4887-a697-cff7a7719441",
+      "name": "Contabilizar Dados"
+    },
+    {
+      "parameters": {
+        "jsCode": "return items.map(item => {\n  const d = item.json;\n\n  const toText = (v) => {\n    if (!v) return \"\";\n    if (typeof v === \"string\") return v;\n    try {\n      return JSON.stringify(v, null, 2);\n    } catch {\n      return String(v);\n    }\n  };\n\n  const prompt = `Com base nos dados agregados abaixo, gere um RELATÓRIO SEMANAL EXECUTIVO.\nRetorne EXCLUSIVAMENTE um JSON válido, sem texto adicional.\n\nContexto:\n- Os dados são de feedbacks anônimos de colaboradores\n- O relatório será enviado para gestores\n- Linguagem clara, analítica, simples e profissional\n- Evite termos técnicos excessivos\n- Não invente dados\n\nDados da semana:\nSemana: ${d.semana ?? \"N/A\"}\nTotal de feedbacks: ${d.total_feedbacks ?? 0}\n\nDistribuição por tipo de feedback:\n${toText(d.tipos)}\n\nDistribuição por sentimento:\n${toText(d.sentimentos)}\n\nDistribuição por setor:\n${toText(d.setores)}\n\nTemas principais mais recorrentes:\n${toText(d.temas)}\n\nDistribuição por criticidade:\n${toText(d.criticidade)}\n\nQuantidade de feedbacks com criticidade alta:\n${d.quantidade_criticos ?? 0}\n\nResumos executivos individuais:\n${toText(d.resumos)}\n\nInsights individuais:\n${toText(d.insights)}\n\nTarefas obrigatórias:\n1. Criar resumo executivo geral da semana\n2. Interpretar o clima geral da empresa com base nos sentimentos\n3. Identificar padrões e temas recorrentes relevantes\n4. Apontar pontos de atenção para a liderança\n5. Destacar aspectos positivos, se existirem\n6. Gerar recomendações práticas\n7. Indicar o sentimento predominante da semana\n8. Identificar o setor mais citado\n\nFormato de saída (JSON obrigatório):\n{\n  \"resumo_executivo_geral\": \"\",\n  \"visao_geral\": \"\",\n  \"analise_sentimentos\": \"\",\n  \"temas_recorrentes\": [\n    {\n      \"tema\": \"\",\n      \"quantidade\": \"\"\n    }\n  ],\n  \"pontos_atencao\": \"\",\n  \"pontos_positivos\": \"\",\n  \"recomendacoes\": \"\",\n  \"conclusao\": \"\",\n  \"sentimento_predominante\": \"\",\n  \"setor_mais_citado\": \"\"\n}`;\n\n  return {\n    json: {\n      model: \"openai/gpt-4o-mini\",\n      temperature: 0.3,\n      messages: [\n        {\n          role: \"system\",\n          content: \"Você é um analista especialista em clima organizacional, cultura corporativa e relatórios executivos para gestores de pequenas empresas.\"\n        },\n        {\n          role: \"user\",\n          content: prompt\n        }\n      ]\n    }\n  };\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        832,
+        0
+      ],
+      "id": "13ebdad0-d749-4431-9546-ea75e7befeb1",
+      "name": "Modelar Prompt IA"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://openrouter.ai/api/v1/chat/completions",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "openAiApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer  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"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "model",
+              "value": "={{ $json.model }}"
+            },
+            {
+              "name": "temperature",
+              "value": "={{ $json.temperature }}"
+            },
+            {
+              "name": "messages",
+              "value": "={{ $json.messages }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        1056,
+        0
+      ],
+      "id": "7730e180-b5ab-4d79-b590-7584932dcf6d",
+      "name": "Requisição IA",
+      "credentials": {
+        "openAiApi": {
+          "id": "3Wm5j2mE0LYG78xA",
+          "name": "OpenAi account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const content = $json.choices[0].message.content;\n\n// remove possíveis ```json ou ``` que a IA possa ter colocado\nconst cleaned = content\n  .replace(/```json/g, '')\n  .replace(/```/g, '')\n  .trim();\n\nconst parsed = JSON.parse(cleaned);\n\nreturn [\n  {\n    json: parsed\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1280,
+        0
+      ],
+      "id": "4e11e208-6858-4e0a-8b9c-3c13cb655963",
+      "name": "Tratar Dados IA"
+    },
+    {
+      "parameters": {
+        "html": "<html lang=\"pt-BR\">\n<head>\n  <meta charset=\"UTF-8\">\n  <title>Relatório Semanal de Feedback</title>\n  <link href=\"https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap\" rel=\"stylesheet\">\n  <style>\n    :root {\n      --primary: #1a365d;\n      --secondary: #4a5568;\n      --border-color: #e2e8f0;\n      --bg-light: #f8fafc;\n    }\n\n    * { box-sizing: border-box; -webkit-print-color-adjust: exact; }\n\n    body { \n      font-family: 'Inter', -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; \n      line-height: 1.6; \n      color: #2d3748; \n      margin: 0;\n      padding: 40px;\n      background-color: #fff;\n    }\n\n    h1 { \n      text-align: left; \n      font-size: 26px; \n      font-weight: 800;\n      color: var(--primary);\n      margin-bottom: 5px;\n      letter-spacing: -0.5px;\n      display: flex;\n      align-items: center;\n      gap: 10px;\n    }\n\n    .header-meta {\n      font-size: 13px;\n      color: var(--secondary);\n      margin-bottom: 20px;\n      display: flex;\n      justify-content: space-between;\n      border-bottom: 2px solid var(--primary);\n      padding-bottom: 15px;\n    }\n\n    .header-meta b { color: var(--primary); }\n\n    h2 { \n      font-size: 19px; \n      font-weight: 700;\n      margin-top: 0; \n      margin-bottom: 12px;\n      color: inherit;\n      display: flex;\n      align-items: center;\n      gap: 8px;\n    }\n\n    h3 { font-size: 16px; margin-top: 20px; margin-bottom: 8px; color: var(--primary); }\n\n    .callout { \n      border-radius: 12px; \n      padding: 20px; \n      margin-bottom: 24px; \n      border: 1px solid transparent;\n      page-break-inside: avoid;\n      box-shadow: 0 1px 3px rgba(0,0,0,0.05);\n    }\n\n    .yellow { background-color: #fffbeb; color: #92400e; border-color: #fde68a; }\n    .green { background-color: #f0fdf4; color: #166534; border-color: #bbf7d0; }\n    .red { background-color: #fef2f2; color: #991b1b; border-color: #fecaca; }\n    .blue { background-color: #eff6ff; color: #1e40af; border-color: #bfdbfe; }\n    .purple { background-color: #f5f3ff; color: #5b21b6; border-color: #ddd6fe; }\n    .gray { background-color: #f8fafc; color: #334155; border-color: #e2e8f0; }\n\n    .callout p { margin: 8px 0; font-size: 14px; }\n\n    hr { border: none; border-top: 1px solid var(--border-color); margin: 25px 0; }\n\n    table { \n      width: 100%; \n      border-collapse: separate; \n      border-spacing: 0;\n      margin-top: 15px; \n      margin-bottom: 25px;\n      border: 1px solid var(--border-color);\n      border-radius: 8px;\n      overflow: hidden;\n    }\n\n    th, td { \n      padding: 12px 15px; \n      text-align: left; \n      font-size: 14px;\n      border-bottom: 1px solid var(--border-color);\n    }\n\n    th { \n      background-color: #f1f5f9; \n      font-weight: 700;\n      color: var(--primary);\n      text-transform: uppercase;\n      font-size: 11px;\n      letter-spacing: 0.5px;\n    }\n\n    tr:last-child td { border-bottom: none; }\n    tr:hover td { background-color: #f8fafc; }\n\n    .footer-note {\n      font-size: 12px;\n      color: #94a3b8;\n      text-align: center;\n      margin-top: 40px;\n      font-style: italic;\n    }\n\n    .feedback-item {\n      border: 1px solid #e2e8f0;\n      border-radius: 10px;\n      padding: 16px;\n      margin-bottom: 18px;\n      background-color: #f8fafc;\n      page-break-inside: avoid;\n    }\n    \n    .feedback-header {\n      font-size: 12px;\n      font-weight: 600;\n      color: #1a365d;\n      margin-bottom: 6px;\n    }\n    \n    .feedback-meta {\n      font-size: 12px;\n      color: #475569;\n      margin-bottom: 10px;\n    }\n    \n    .feedback-meta span {\n      margin-right: 12px;\n    }\n    \n    .feedback-resumo {\n      font-size: 14px;\n      margin-bottom: 10px;\n      color: #0f172a;\n    }\n    \n    .feedback-original {\n      font-size: 13px;\n      color: #475569;\n      background-color: #ffffff;\n      padding: 10px 12px;\n      border-radius: 6px;\n    }\n\n    @media print {\n      body { \n        margin: 0; \n        padding: 20px; \n      }\n      \n      .report-container {\n        padding: 20px;\n      }\n      .callout { box-shadow: none; }\n    }\n  </style>\n</head>\n<body>\n\n<div class=\"report-container\">\n  <h1>🏢 RELATÓRIO SEMANAL DE FEEDBACK ANÔNIMO</h1>\n\n  <div class=\"header-meta\">\n    <div>\n      Empresa: <b>{{ $json.empresa }}</b> | \n      Semana: <b>{{ $json.semana }}</b>\n    </div>\n    <div>\n      Data: <b>{{ $json.data_hoje }}</b>\n    </div>\n  </div>\n\n  <div class=\"callout yellow\">\n    <h2>💡 Visão Rápida</h2>\n    <p><b>Total de feedbacks:</b> {{ $json.total_feedbacks }}</p>\n    <p><b>Sentimento predominante:</b> {{ $json.sentimento_predominante }}</p>\n    <p><b>Feedbacks críticos:</b> {{ $json.quantidade_criticos }}</p>\n    <p><b>Setor mais citado:</b> {{ $json.setor_mais_citado }}</p>\n  </div>\n\n  <div class=\"callout green\">\n    <h2>🧠 Resumo Executivo</h2>\n    <p>{{ $json.resumo_executivo_geral }}</p>\n  </div>\n\n  <div class=\"callout red\">\n    <h2>🔥 Principais Alertas</h2>\n    <p>{{ $json.pontos_atencao }}</p>\n  </div>\n\n  <div class=\"callout blue\">\n    <h2>⭐ Destaques Positivos</h2>\n    <p>{{ $json.pontos_positivos }}</p>\n  </div>\n\n  <h2 style=\"color: var(--primary); margin-top: 30px;\">🏷️ Temas Mais Citados</h2>\n  {{ $json.tabela_temas_html }}\n\n  <div class=\"callout purple\">\n    <h2>🎯 Ações Recomendadas</h2>\n    <p>{{ $json.recomendacoes_html }}</p>\n  </div>\n\n  <div class=\"callout gray\">\n    <h2>📌 Conclusão</h2>\n    <p>{{ $json.conclusao }}</p>\n  </div>\n\n  <p class=\"footer-note\">\n    ℹ️ Relatório gerado a partir de feedbacks anônimos. \n    Pode ser usado para acompanhamento e melhoria contínua do clima interno.\n  </p>\n</div>\n\n<h2 style=\"margin-top: 50px;\">📎 Feedbacks Individuais</h2>\n\n<p style=\"font-size: 13px; color: #64748b; margin-bottom: 20px;\">\nOs feedbacks abaixo são apresentados de forma anônima. \nOs resumos foram gerados automaticamente para facilitar a leitura gerencial.\n</p>\n\n{{ $json.feedbacks_html }}\n\n</body>\n</html>"
+      },
+      "type": "n8n-nodes-base.html",
+      "typeVersion": 1.2,
+      "position": [
+        1712,
+        0
+      ],
+      "id": "bdf0a2e4-401e-4a4b-bd71-d534a82709f0",
+      "name": "Gerar Template HTML"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Dados Base\nconst analise = $input.first().json;\nconst contagem = $('Contabilizar Dados').item.json;\n\n// Tabela de tema - HTML\nconst temas = analise.temas_recorrentes ?? [];\n\ntemas.sort((a, b) => (b.quantidade ?? 0) - (a.quantidade ?? 0));\n\nlet rows = \"\";\n\nfor (const t of temas) {\n  rows += `\n    <tr>\n      <td>${t.tema}</td>\n      <td>${t.quantidade}</td>\n    </tr>\n  `;\n}\n\nconst tabela_temas_html = `\n<table>\n  <thead>\n    <tr>\n      <th>Tema Principal</th>\n      <th style=\"width: 100px;\">Quantidade</th>\n    </tr>\n  </thead>\n  <tbody>\n    ${rows}\n  </tbody>\n</table>\n`;\n\n// Feedbacks Individuais - HTML\nlet feedbacks = $('Extrair Dados Semanal').all();\n\nfeedbacks = feedbacks.filter(item => item.json.feedback_original || item.json.resumo_executivo);\n\nconst ordemCriticidade = { \"alta\": 3, \"media\": 2, \"baixa\": 1, \"N/A\": 0 };\n\nconst coresBorda = {\n  \"alta\": \"#f87171\", \n  \"media\": \"#fbbf24\", \n  \"baixa\": \"#34d399\",\n  \"N/A\": \"#e2e8f0\" \n};\n\nfeedbacks.sort((a, b) => {\n  const c1 = ordemCriticidade[a.json.criticidade] ?? 0;\n  const c2 = ordemCriticidade[b.json.criticidade] ?? 0;\n  return c2 - c1;\n});\n\nlet feedbacks_html = \"\";\nlet contador = 1;\n\nfor (const item of feedbacks) {\n  const f = item.json ?? {};\n\n  const feedback_original = f.feedback_original?.trim();\n  const resumo = f.resumo_executivo?.trim();\n\n  if (!feedback_original && !resumo) continue;\n\n  const setor = f.setor || 'Não informado';\n  const tema = f.tema_principal || 'Não classificado';\n  const sentimento = f.sentimento || 'N/A';\n  const criticidade = f['criticidade'] || 'N/A';\n  const tipo = f.tipo_classificado || f.tipo_informado || 'N/A';\n\n  const corBorda = coresBorda[criticidade] || \"#e2e8f0\";\n\n  feedbacks_html += `\n    <div class=\"feedback-item\">\n      <div class=\"feedback-header\">🗨️ Feedback #${contador}</div>\n\n      <div class=\"feedback-meta\">\n        <span><b>Setor:</b> ${setor}</span>\n        <span><b>Tema:</b> ${tema}</span>\n        <span><b>Sentimento:</b> ${sentimento}</span>\n        <span><b>Criticidade:</b> ${criticidade}</span>\n        <span><b>Tipo:</b> ${tipo}</span>\n      </div>\n\n      <div class=\"feedback-resumo\">\n        ${resumo || '<i>Resumo não disponível</i>'}\n      </div>\n\n      <div class=\"feedback-original\" style=\"border-left: 4px solid ${corBorda};\">\n        \"${feedback_original || ''}\"\n      </div>\n    </div>\n  `;\n\n  contador++;\n}\n\nif (!feedbacks_html) {\n  feedbacks_html = `<p><i>Nenhum feedback individual encontrado para esta semana.</i></p>`;\n}\n\n// Retorno final para o HTML\nreturn [{\n  json: {\n    empresa: contagem.empresa,\n    semana: contagem.semana,\n    data_hoje: new Date().toLocaleDateString('pt-BR'),\n\n    total_feedbacks: contagem.total_feedbacks,\n    quantidade_criticos: contagem.quantidade_criticos,\n\n    sentimento_predominante: analise.sentimento_predominante,\n    setor_mais_citado: analise.setor_mais_citado,\n\n    resumo_executivo_geral: analise.resumo_executivo_geral,\n    pontos_atencao: analise.pontos_atencao,\n    pontos_positivos: analise.pontos_positivos,\n    conclusao: analise.conclusao,\n\n    recomendacoes_html: analise.recomendacoes\n      .replace(/^(\\d+\\.\\s*)/, '• ')\n      .replace(/\\s\\d+\\.\\s*/g, '<br>• '),\n\n    tabela_temas_html,\n    feedbacks_html\n  }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1488,
+        0
+      ],
+      "id": "d3ba5849-897d-4622-8797-5379ed9d5042",
+      "name": "Montar Conteúdo HTML"
+    },
+    {
+      "parameters": {
+        "html_content": "={{ $json.html }}",
+        "output_format": "file",
+        "output_filename": "=Relatório - Semana {{ $('Contabilizar Dados').item.json.semana }}"
+      },
+      "type": "n8n-nodes-htmlcsstopdf.htmlcsstopdf",
+      "typeVersion": 1,
+      "position": [
+        1920,
+        0
+      ],
+      "id": "f46528bd-e8a9-4394-b135-3784f88bb5db",
+      "name": "HTML para PDF",
+      "credentials": {
+        "htmlcsstopdfApi": {
+          "id": "YfKBncUBa52rutDa",
+          "name": "HTML to PDF account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "name": "=Relatório Semanal - {{ new Date().toLocaleDateString('pt-BR') }}",
+        "driveId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "My Drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "value": "1TuFhtKZCwz8A9UfV7jdPPre32JhoBCyH",
+          "mode": "list",
+          "cachedResultName": "Empresa Mercado Eletrônico",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/1TuFhtKZCwz8A9UfV7jdPPre32JhoBCyH"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        2160,
+        -96
+      ],
+      "id": "28bc5e58-6a13-4f44-9df5-9734d466c9e2",
+      "name": "Carregar PDF",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "wnf7pPLHW8ZV7s4M",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "anandashayla@hotmail.com",
+        "subject": "=Relatório Semanal de Feedback Anônimo - Semana  {{ $('Contabilizar Dados').item.json.semana }}",
+        "emailType": "text",
+        "message": "=Olá Francisco, \n\nSegue o relatório semanal de feedback anônimo da equipe referente à {{ $('Contabilizar Dados').item.json.semana }}. Para mais detalhes e análise completa, consulte o PDF em anexo.\n\nAtenciosamente, \nEquipe do Porta Aberta\n",
+        "options": {
+          "attachmentsUi": {
+            "attachmentsBinary": [
+              {}
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        2160,
+        96
+      ],
+      "id": "579cbc79-52ae-41f6-aab7-d5d463e776b6",
+      "name": "Enviar Relatório",
+      "webhookId": "c38418bb-3d85-4ac8-b9e0-f2a8e51cb23c",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "QX4WwolJLcT77K35",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "-5265528627",
+        "text": "**📢 Relatório Semanal de Feedback Disponível**\n\nOlá Francisco,\n\nO relatório da sua equipe já está disponível.\n🔔 Confira seu e-mail para acessar.\n\nAtenciosamente,\nEquipe do Porta Aberta",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        2368,
+        96
+      ],
+      "id": "bf8ed2e5-eadb-4190-9299-57c87c89ae13",
+      "name": "Enviar Notificação",
+      "webhookId": "9a370f20-8f5d-4d3d-bb46-458d22a56c22",
+      "credentials": {
+        "telegramApi": {
+          "id": "v0i5DEbJGFvWhVQ1",
+          "name": "Telegram account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Agendamento Automático": {
+      "main": [
+        [
+          {
+            "node": "Calcular Semana",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calcular Semana": {
+      "main": [
+        [
+          {
+            "node": "Extrair Dados Semanal",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extrair Dados Semanal": {
+      "main": [
+        [
+          {
+            "node": "Contabilizar Dados",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Contabilizar Dados": {
+      "main": [
+        [
+          {
+            "node": "Modelar Prompt IA",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Modelar Prompt IA": {
+      "main": [
+        [
+          {
+            "node": "Requisição IA",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Requisição IA": {
+      "main": [
+        [
+          {
+            "node": "Tratar Dados IA",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tratar Dados IA": {
+      "main": [
+        [
+          {
+            "node": "Montar Conteúdo HTML",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gerar Template HTML": {
+      "main": [
+        [
+          {
+            "node": "HTML para PDF",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Montar Conteúdo HTML": {
+      "main": [
+        [
+          {
+            "node": "Gerar Template HTML",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTML para PDF": {
+      "main": [
+        [
+          {
+            "node": "Carregar PDF",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Enviar Relatório",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Carregar PDF": {
+      "main": [
+        []
+      ]
+    },
+    "Enviar Relatório": {
+      "main": [
+        [
+          {
+            "node": "Enviar Notificação",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enviar Notificação": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "13af0a0d-0bab-40cb-a317-83e8e1335763",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "8e49680a09686df7fb33f428974679a4ab99abc4f230d39ca1abd80d09a3a25e"
+  },
+  "id": "ZpUulGSf2y7f8mKl",
+  "tags": []
+}

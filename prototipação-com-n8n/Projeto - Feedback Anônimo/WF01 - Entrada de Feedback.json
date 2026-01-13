@@ -1,0 +1,462 @@
+{
+  "name": "WF01 - Entrada de Feedback",
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "documentId": {
+          "__rl": true,
+          "value": "14ZlDeDekoQk0XxKG-AN0ZUYnsmpQ6nmVU-o1XTIsFs8",
+          "mode": "list",
+          "cachedResultName": "Feedback Anônimo - Empresa Mercado Eletrônico",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/14ZlDeDekoQk0XxKG-AN0ZUYnsmpQ6nmVU-o1XTIsFs8/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1323530200,
+          "mode": "list",
+          "cachedResultName": "Respostas do Formulário",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/14ZlDeDekoQk0XxKG-AN0ZUYnsmpQ6nmVU-o1XTIsFs8/edit#gid=1323530200"
+        },
+        "event": "rowAdded",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTrigger",
+      "typeVersion": 1,
+      "position": [
+        64,
+        16
+      ],
+      "id": "365acd66-bbb7-401e-80c8-ad11d681cc82",
+      "name": "Nova Resposta",
+      "credentials": {
+        "googleSheetsTriggerOAuth2Api": {
+          "id": "ELQLmVIaqlHycKtd",
+          "name": "Google Sheets Trigger account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const dataStr = $json['Carimbo de data/hora'];\nconst data = new Date(dataStr);\n\nconst dia = data.getDate();\nconst primeiroDiaMes = new Date(data.getFullYear(), data.getMonth(), 1);\nconst diaSemanaPrimeiroDia = primeiroDiaMes.getDay();\nconst semana = Math.ceil((dia + diaSemanaPrimeiroDia) / 7);\n\nreturn {\n  json: {\n    semana,\n    data_hora: dataStr,\n    setor: $json['Setor relacionado ao seu feedback'],\n    tipo_informado: $json['Tipo de feedback'],\n    feedback: $json['Feedback']\n  }\n};\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        336,
+        16
+      ],
+      "id": "85768e56-16c3-42f7-bd24-dd4596a78785",
+      "name": "Calcular Semana"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "f909a8b4-6f40-4007-ab58-fb02e2701601",
+              "name": "empresa",
+              "value": "Mercado Eletrônico",
+              "type": "string"
+            },
+            {
+              "id": "c7b4d78c-5c87-48ad-aeb2-dcd4273ddf22",
+              "name": "data_hora",
+              "value": "={{ $json.data_hora }}",
+              "type": "string"
+            },
+            {
+              "id": "c7cc34d8-f7c9-4438-9afd-a30d9fe1124b",
+              "name": "semana",
+              "value": "={{ $json.semana }}",
+              "type": "string"
+            },
+            {
+              "id": "6e06674c-ae08-44eb-8407-82b2581fd5c5",
+              "name": "setor",
+              "value": "={{ $('Nova Resposta').item.json['Setor relacionado ao seu feedback '] }}",
+              "type": "string"
+            },
+            {
+              "id": "11280505-6350-45c5-b172-a441d05cfa64",
+              "name": "tipo_informado",
+              "value": "={{ $('Nova Resposta').item.json['Tipo de feedback '] }}",
+              "type": "string"
+            },
+            {
+              "id": "554494bb-4755-4e34-b83c-f7ca65287dee",
+              "name": "feedback",
+              "value": "={{ $('Nova Resposta').item.json['Feedback '] }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        624,
+        16
+      ],
+      "id": "28c77041-6286-4910-9ff4-5e9fc76010fd",
+      "name": "Tratar Resposta"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://openrouter.ai/api/v1/chat/completions",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "openAiApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer  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"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"openai/gpt-4o-mini\",\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": \"Você é um analista especialista em clima organizacional, cultura corporativa e análise de feedback anônimo de colaboradores. Seu objetivo é extrair insights claros, objetivos, padronizados e acionáveis para gestores de pequenas empresas.\"\n    },\n    {\n      \"role\": \"user\",\n      \"content\": \"Analise o feedback anônimo abaixo e retorne EXCLUSIVAMENTE um JSON válido, sem texto adicional.\\n\\nContexto:\\n- O feedback é anônimo\\n- Pode ser curto, emocional, confuso ou agressivo\\n- O campo \\\"tipo de feedback\\\" pode estar vazio ou incorreto\\n\\nDados do feedback:\\nSetor informado: {{ $json.setor }}\\nTipo informado (se houver): {{ $json.tipo_informado || \"não informado\" }}\\nTexto do feedback: {{ $json.feedback }}\\n\\nTarefas obrigatórias:\\n1. Detectar o sentimento predominante, considerando o conteúdo implícito.\\n2. Classificar automaticamente o tipo de feedback, mesmo que o tipo não tenha sido informado.\\n3. Identificar o tema principal e, se aplicável, até dois temas secundários.\\n4. Avaliar o nível de criticidade para a gestão, seguindo estas regras:\\n   - baixa: crítica leve, comentário informativo ou elogio que não demanda ação imediata\\n   - media: crítica relevante ou sugestão que pode impactar processos ou clima, recomendando atenção do gestor\\n   - alta: problema sério, reclamação ou risco para equipe/empresa que exige ação imediata\\n5. Gerar um resumo curto e objetivo para relatório semanal.\\n6. Sugerir uma possível ação gerencial (insight acionável).\\n\\nRegras obrigatórias:\\n- Não invente dados pessoais.\\n- Não suavize críticas.\\n- Seja objetivo.\\n- Sempre preencha todos os campos.\\n- Utilize EXATAMENTE os valores listados abaixo.\\n- Não utilize sinônimos, variações ortográficas ou acentuação diferente.\\n- Caso haja dúvida, escolha a opção MAIS PRÓXIMA dentro da lista permitida.\\n\\nClassificações permitidas (valores exatos):\\n\\nSentimento:\\n- positivo\\n- neutro\\n- negativo\\n\\nTipo de feedback:\\n- elogio\\n- sugestao\\n- problema\\n- reclamacao\\n\\nTemas possíveis (use os mais adequados):\\n- comunicacao\\n- lideranca\\n- sobrecarga\\n- processos\\n- metas\\n- tecnologia\\n- clima_organizacional\\n- falta_de_recursos\\n- autonomia\\n- reconhecimento\\n- treinamento\\n- atendimento_ao_cliente\\n- organizacao\\n- transparencia\\n- outros\\n\\nCriticidade:\\n- baixa\\n- media\\n- alta\\n\\nFormato de resposta (JSON obrigatório):\\n{\\n  \\\"sentimento\\\": \\\"\\\",\\n  \\\"tipo_classificado\\\": \\\"\\\",\\n  \\\"tema_principal\\\": \\\"\\\",\\n  \\\"temas_secundarios\\\": [],\\n  \\\"criticidade\\\": \\\"\\\",\\n  \\\"resumo_executivo\\\": \\\"\\\",\\n  \\\"insight_acionavel\\\": \\\"\\\"\\n}\"\n    }\n  ],\n  \"temperature\": 0.2\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        912,
+        16
+      ],
+      "id": "2348a619-7659-4132-a508-7cc8833670a7",
+      "name": "Análise IA",
+      "credentials": {
+        "openAiApi": {
+          "id": "3Wm5j2mE0LYG78xA",
+          "name": "OpenAi account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "1f4376e0-f7c8-48a0-b8b3-647ba7c8f7d8",
+              "name": "=sentimento",
+              "value": "={{ JSON.parse($json.choices[0].message.content).sentimento }}",
+              "type": "string"
+            },
+            {
+              "id": "b9725ef5-a455-4366-ab73-778020a0019b",
+              "name": "=tipo_classificado",
+              "value": "={{ JSON.parse($json.choices[0].message.content).tipo_classificado }}",
+              "type": "string"
+            },
+            {
+              "id": "7339391b-caa5-4c4e-bd58-251346f367b1",
+              "name": "tema_principal",
+              "value": "={{ JSON.parse($json.choices[0].message.content).tema_principal }}",
+              "type": "string"
+            },
+            {
+              "id": "d46c8396-903e-4db4-b27a-0635de7c64a5",
+              "name": "temas_secundarios",
+              "value": "={{ JSON.parse($json.choices[0].message.content).temas_secundarios.join(\",\") }}",
+              "type": "string"
+            },
+            {
+              "id": "66d75245-35d5-468b-8086-f913acd36006",
+              "name": "criticidade",
+              "value": "={{ JSON.parse($json.choices[0].message.content).criticidade }}",
+              "type": "string"
+            },
+            {
+              "id": "6f06d0cc-5d23-4ab6-bd77-803701f69031",
+              "name": "resumo_executivo",
+              "value": "={{ JSON.parse($json.choices[0].message.content).resumo_executivo }}",
+              "type": "string"
+            },
+            {
+              "id": "6fb20218-393e-45dc-a6a2-b150acbe5df6",
+              "name": "insight_acionavel",
+              "value": "={{ JSON.parse($json.choices[0].message.content).insight_acionavel }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1184,
+        16
+      ],
+      "id": "ef6ec4b2-4e76-41f8-8fc3-5259f8d937e8",
+      "name": "Tratar Dados IA"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "14ZlDeDekoQk0XxKG-AN0ZUYnsmpQ6nmVU-o1XTIsFs8",
+          "mode": "list",
+          "cachedResultName": "Feedback Anônimo - Empresa Mercado Eletrônico",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/14ZlDeDekoQk0XxKG-AN0ZUYnsmpQ6nmVU-o1XTIsFs8/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 979418260,
+          "mode": "list",
+          "cachedResultName": "Dados Tratados",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/14ZlDeDekoQk0XxKG-AN0ZUYnsmpQ6nmVU-o1XTIsFs8/edit#gid=979418260"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "semana": "={{ $('Tratar Resposta').item.json.semana }}",
+            "setor": "={{ $('Tratar Resposta').item.json.setor }}",
+            "insight_acionavel": "={{ $json.insight_acionavel }}",
+            "resumo_executivo": "={{ $json.resumo_executivo }}",
+            "criticidade": "={{ $json.criticidade }}",
+            "temas_secundarios": "={{ $json.temas_secundarios }}",
+            "tema_principal": "={{ $json.tema_principal }}",
+            "tipo_classificado": "={{ $json.tipo_classificado }}",
+            "sentimento": "={{ $json.sentimento }}",
+            "feedback_original": "={{ $('Tratar Resposta').item.json.feedback }}",
+            "tipo_informado": "={{ $('Tratar Resposta').item.json.tipo_informado }}",
+            "empresa": "={{ $('Tratar Resposta').item.json.empresa }}",
+            "data/hora": "={{ $('Tratar Resposta').item.json.data_hora }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "empresa",
+              "displayName": "empresa",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "data/hora",
+              "displayName": "data/hora",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "semana",
+              "displayName": "semana",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "setor",
+              "displayName": "setor",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "feedback_original",
+              "displayName": "feedback_original",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "tipo_informado",
+              "displayName": "tipo_informado",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "tipo_classificado",
+              "displayName": "tipo_classificado",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "sentimento",
+              "displayName": "sentimento",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "tema_principal",
+              "displayName": "tema_principal",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "temas_secundarios",
+              "displayName": "temas_secundarios",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "criticidade",
+              "displayName": "criticidade",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "resumo_executivo",
+              "displayName": "resumo_executivo",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "insight_acionavel",
+              "displayName": "insight_acionavel",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1456,
+        16
+      ],
+      "id": "5607f089-944b-4d32-9101-8986ddf813c4",
+      "name": "Inserir Linha",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "uVJm4EoPptoNDJyX",
+          "name": "Google Sheets account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Nova Resposta": {
+      "main": [
+        [
+          {
+            "node": "Calcular Semana",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calcular Semana": {
+      "main": [
+        [
+          {
+            "node": "Tratar Resposta",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tratar Resposta": {
+      "main": [
+        [
+          {
+            "node": "Análise IA",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Análise IA": {
+      "main": [
+        [
+          {
+            "node": "Tratar Dados IA",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tratar Dados IA": {
+      "main": [
+        [
+          {
+            "node": "Inserir Linha",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Inserir Linha": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "e58e8ee7-e9f3-4516-a791-63ece538ae73",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "8e49680a09686df7fb33f428974679a4ab99abc4f230d39ca1abd80d09a3a25e"
+  },
+  "id": "gmSXpq8dp74fLIv5",
+  "tags": []
+}

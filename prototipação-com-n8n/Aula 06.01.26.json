@@ -1,0 +1,291 @@
+{
+  "name": "Aula 06.01.26",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "de1976a1-29a8-48f8-906e-e5d92dc2312c",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "5789b577-daa6-4d93-be02-c221976f8a7d",
+      "name": "Webhook",
+      "webhookId": "de1976a1-29a8-48f8-906e-e5d92dc2312c"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "2f522e0b-a988-4ec4-b7ee-9e70a9e5962a",
+              "name": "nome",
+              "value": "={{ $json.body.nome }}",
+              "type": "string"
+            },
+            {
+              "id": "4ee34819-da5c-4573-8460-a96f04ef20ba",
+              "name": "telefone",
+              "value": "={{ $json.body.telefone }}",
+              "type": "string"
+            },
+            {
+              "id": "1cc04bcd-f659-4e56-a748-7c981a9b25c0",
+              "name": "email",
+              "value": "={{ $json.body.email }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        208,
+        0
+      ],
+      "id": "e20a15e4-2c29-4d29-9bdd-53c20d409d48",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json.email }}",
+        "subject": "Estou testando",
+        "emailType": "text",
+        "message": "=Olá,  {{ $json.nome }}!\n\nEsse é um email de teste",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        416,
+        0
+      ],
+      "id": "1a8e77b1-c88d-4f91-b02f-458519e1ce83",
+      "name": "Send a message",
+      "webhookId": "bd80f398-6e88-4dab-8d6a-725ca1173c64",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "QX4WwolJLcT77K35",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "ccc282c2-5dda-4efd-bdbd-ed0ede7d2d03",
+              "name": "id",
+              "value": "={{ $json.id }}",
+              "type": "string"
+            },
+            {
+              "id": "dfc1baa6-93ef-413a-aa33-59378e8451a1",
+              "name": "status",
+              "value": "={{ $json.labelIds }}",
+              "type": "array"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        624,
+        0
+      ],
+      "id": "550facfa-d54c-4c88-8976-7f4da2f3f424",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1A3oFe_grg8_HTktCah6uGgVZYPpjuVpp9BN3vPdZTqo",
+          "mode": "list",
+          "cachedResultName": "DiverseDev",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1A3oFe_grg8_HTktCah6uGgVZYPpjuVpp9BN3vPdZTqo/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 863998058,
+          "mode": "list",
+          "cachedResultName": "Folha2",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1A3oFe_grg8_HTktCah6uGgVZYPpjuVpp9BN3vPdZTqo/edit#gid=863998058"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "id": "={{ $json.id }}",
+            "nome": "={{ $('Edit Fields').item.json.nome }}",
+            "telefone": "={{ $('Edit Fields').item.json.telefone }}",
+            "email": "={{ $('Edit Fields').item.json.email }}",
+            "status": "={{ $json.status[0] }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "nome",
+              "displayName": "nome",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "telefone",
+              "displayName": "telefone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "email",
+              "displayName": "email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        832,
+        0
+      ],
+      "id": "2c797b32-25fc-483a-9479-638c2c7a1bf6",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "uVJm4EoPptoNDJyX",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        1072,
+        0
+      ],
+      "id": "c408b0dc-1087-42ec-97b5-493b4a9e7644",
+      "name": "No Operation, do nothing"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append row in sheet": {
+      "main": [
+        [
+          {
+            "node": "No Operation, do nothing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "a7ec86f2-1901-45bb-8d56-b32ecb68871d",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "8e49680a09686df7fb33f428974679a4ab99abc4f230d39ca1abd80d09a3a25e"
+  },
+  "id": "ZlU8rdxa43e1WS-Cbt5nx",
+  "tags": []
+}

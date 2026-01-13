@@ -1,0 +1,273 @@
+{
+  "name": "Telegram 08.01.26",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "seconds"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -1184,
+        112
+      ],
+      "id": "d573271a-bc7c-4c9b-b23e-11b767e3f7c0",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "url": "=https://api.coinbase.com/v2/prices/{{ $json.par }}/spot ",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -768,
+        112
+      ],
+      "id": "a1f5c62f-49b4-46ca-b1bf-fed388930994",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "value": "Y9QsNh04EdgaMVC7",
+          "mode": "list",
+          "cachedResultName": "Cripto",
+          "cachedResultUrl": "/projects/jk4qgFgLtPdW5OyS/datatables/Y9QsNh04EdgaMVC7"
+        }
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        -976,
+        112
+      ],
+      "id": "2724fba4-cfef-4ffe-ae22-4afeb5f2f10c",
+      "name": "Get row(s)"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "value": "Y9QsNh04EdgaMVC7",
+          "mode": "list",
+          "cachedResultName": "Cripto",
+          "cachedResultUrl": "/projects/jk4qgFgLtPdW5OyS/datatables/Y9QsNh04EdgaMVC7"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "par",
+              "keyValue": "={{ $json.data.base }}-USD"
+            }
+          ]
+        },
+        "limit": 1
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        -560,
+        112
+      ],
+      "id": "b8f61610-f07c-4587-9046-6be939d1f0ed",
+      "name": "Get row(s)1"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "8d57f3ed-3acc-4275-ab58-30b4b11967dc",
+              "leftValue": "={{ Number($json.valor) }}",
+              "rightValue": "={{ Number($('HTTP Request').item.json.data.amount)}}",
+              "operator": {
+                "type": "number",
+                "operation": "lt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -352,
+        112
+      ],
+      "id": "c625a6e1-5385-4ff2-951c-3a4287fdac83",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "chatId": "-5265528627",
+        "text": "=A moeda {{ $json.par }} aumentou de preco! Preço atual:   {{ $json.valor }} | preço anterior: {{ $('Get row(s)1').item.json.valor }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -16,
+        0
+      ],
+      "id": "1344bfbf-ab11-4070-9d32-0e11eda1a680",
+      "name": "Enviar a mensagem se o preço aumentou",
+      "webhookId": "66c378ab-e5ed-4ac2-887a-48a208575745",
+      "credentials": {
+        "telegramApi": {
+          "id": "v0i5DEbJGFvWhVQ1",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "8595692181",
+        "text": "=A moeda  {{ $json.par }} diminuiu de valor! Valor atual: {{ $('HTTP Request').item.json.data.amount }} | valor anterior: {{ $('Get row(s)').item.json.valor }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        256
+      ],
+      "id": "e11b887e-12d0-47c0-8f22-4230327335a2",
+      "name": "Enviar a mesasgem se o preço diminuiu",
+      "webhookId": "dc767ddc-6c13-4973-b088-dccfde746846",
+      "credentials": {
+        "telegramApi": {
+          "id": "v0i5DEbJGFvWhVQ1",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "webhook",
+        "content": "Testando ",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.discord",
+      "typeVersion": 2,
+      "position": [
+        -16,
+        -160
+      ],
+      "id": "5861f6ec-a1a8-4e5f-a26c-52dd41bc62bc",
+      "name": "Discord",
+      "webhookId": "b5e8a723-4772-417c-995a-9759ce758d72",
+      "credentials": {
+        "discordWebhookApi": {
+          "id": "KueeeTcsSiNX3tnq",
+          "name": "Discord Webhook account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get row(s)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s)": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Get row(s)1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s)1": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Enviar a mensagem se o preço aumentou",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Discord",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Enviar a mesasgem se o preço diminuiu",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Discord": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "a379cbe3-e6ab-4744-becc-c8c2f367b1cb",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "8e49680a09686df7fb33f428974679a4ab99abc4f230d39ca1abd80d09a3a25e"
+  },
+  "id": "NNg2KPuJPTfaUh3bAOk6J",
+  "tags": []
+}
