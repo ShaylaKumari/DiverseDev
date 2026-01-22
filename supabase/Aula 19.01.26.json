@@ -1,0 +1,120 @@
+{
+  "name": "Aula 19.01.26",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "227036a1-5ef2-4d66-8d69-deb07d8c8aa8",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "url": "https://gbdizrhpsnuynfeidtpl.supabase.co/rest/v1/tasks?select=*",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "sb_publishable_Y3GWgjDXn4zyOf0J0xzXnA_5ds97Uca"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $json.access_token }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        416,
+        0
+      ],
+      "id": "58c14769-d212-41d0-8fab-b6d7f976c964",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://gbdizrhpsnuynfeidtpl.supabase.co/auth/v1/token?grant_type=password",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "email",
+              "value": "anandashayla@hotmail.com"
+            },
+            {
+              "name": "password",
+              "value": "testesupabase"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        208,
+        0
+      ],
+      "id": "c355436d-c45b-47ee-8bc5-a56f329bc679",
+      "name": "Login email/password",
+      "executeOnce": false,
+      "credentials": {
+        "supabaseApi": {
+          "id": "Cd2Fd6FWfMZsJwsC",
+          "name": "Supabase account 2"
+        },
+        "httpBearerAuth": {
+          "id": "y6PF5NuFYhV9hMOw",
+          "name": "Bearer Auth account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Login email/password",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Login email/password": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "12a450d4-89c4-43d3-9c59-e8219c7d2b90",
+  "meta": {
+    "instanceId": "8e49680a09686df7fb33f428974679a4ab99abc4f230d39ca1abd80d09a3a25e"
+  },
+  "id": "QaE2TL8bLvPYP3Ysyhe_7",
+  "tags": []
+}

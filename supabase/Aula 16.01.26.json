@@ -1,0 +1,109 @@
+{
+  "name": "Aula 16.01.26",
+  "nodes": [
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "e94f5e46-c41f-4224-a0ae-df0a902c0f3e",
+              "name": "id",
+              "value": "={{ $json.body.id }}",
+              "type": "string"
+            },
+            {
+              "id": "bde64a1b-6144-4b63-9451-48a1e460549c",
+              "name": "title",
+              "value": "={{ $json.body.title }}",
+              "type": "string"
+            },
+            {
+              "id": "4c24606c-a6d3-4f22-8375-06728c634c5d",
+              "name": "is_done",
+              "value": "={{ $json.body.is_done }}",
+              "type": "boolean"
+            },
+            {
+              "id": "e2e15e03-9803-4061-a27e-b11eaac13f14",
+              "name": "created_at",
+              "value": "={{ $json.body.created_at }}",
+              "type": "string"
+            },
+            {
+              "id": "eca36809-792f-428c-a031-bfe6d1e90361",
+              "name": "description",
+              "value": "={{ $json.body.description }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        224,
+        0
+      ],
+      "id": "1dd08f50-6110-427d-90a4-d68f4f51c0cd",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "teste",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "2f194d4a-bfa9-4b01-b025-23f508cc5880",
+      "name": "Webhook",
+      "webhookId": "d97203cc-0de4-4204-ac47-2d8ada889efb"
+    },
+    {
+      "parameters": {
+        "content": "Identificando um evento vindo do supabase e ativando o fluxo automaticamente, utilizando url com ngrok\n\n1- Criar, deletar ou atualizar uma tabela no supabase para que o evento fosse disparado.\n2- Necessário criar uma função que fosse disparada com um trigger do supabase\n3- O trigger chama um webhook no n8n",
+        "height": 272,
+        "width": 272,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -384,
+        -80
+      ],
+      "id": "84206b77-c035-4ec0-943d-7fe5a822b1dc",
+      "name": "Sticky Note"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "4a783081-28da-41c6-bf1e-03113e0549e7",
+  "meta": {
+    "instanceId": "8e49680a09686df7fb33f428974679a4ab99abc4f230d39ca1abd80d09a3a25e"
+  },
+  "id": "KDo0D7wae_dm5I3EDje6I",
+  "tags": []
+}

@@ -1,0 +1,383 @@
+{
+  "name": "WF01 -  Entrada de feedback",
+  "nodes": [
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const data = new Date();\n\nconst ano = data.getFullYear()\nconst mes = data.getMonth() + 1\n\nconst primeiroDiaDoMes = new Date(ano, data.getMonth(), 1)\nconst diaDoMes = data.getDate()\n\nconst semana_do_mes = Math.ceil(\n  (diaDoMes + primeiroDiaDoMes.getDay()) / 7\n)\n\nreturn {\n  json: {\n    ano,\n    mes,\n    semana_do_mes,\n    data_hora: data.toString(),\n    slug_empresa: $json.body.company_slug,\n    setor: $json.body.department,\n    tipo_informado: $json.body.feedback_type,\n    feedback: $json.body.feedback\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        384,
+        128
+      ],
+      "id": "bedaa50d-db49-4951-a99a-0ece8c3880d6",
+      "name": "Calcular Semana"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "e0bbcb95-233f-418f-ba59-9e5d7eaa9303",
+              "name": "slug_empresa",
+              "value": "={{ $json.slug_empresa }}",
+              "type": "string"
+            },
+            {
+              "id": "c7b4d78c-5c87-48ad-aeb2-dcd4273ddf22",
+              "name": "data_hora",
+              "value": "={{ $json.data_hora }}",
+              "type": "string"
+            },
+            {
+              "id": "6e06674c-ae08-44eb-8407-82b2581fd5c5",
+              "name": "setor",
+              "value": "={{ $json.setor }}",
+              "type": "string"
+            },
+            {
+              "id": "11280505-6350-45c5-b172-a441d05cfa64",
+              "name": "tipo_informado",
+              "value": "={{ $json.tipo_informado }}",
+              "type": "string"
+            },
+            {
+              "id": "554494bb-4755-4e34-b83c-f7ca65287dee",
+              "name": "feedback",
+              "value": "={{ $json.feedback }}",
+              "type": "string"
+            },
+            {
+              "id": "2e8a9e5b-b769-4360-8873-38f6303e3ca7",
+              "name": "ano",
+              "value": "={{ $json.ano }}",
+              "type": "number"
+            },
+            {
+              "id": "4524ee22-08bb-437d-ae4b-e4ff4586e7b9",
+              "name": "mes",
+              "value": "={{ $json.mes }}",
+              "type": "number"
+            },
+            {
+              "id": "aad547dc-7f1e-40c6-b33d-43e4bb9cb779",
+              "name": "semana_do_mes",
+              "value": "={{ $json.semana_do_mes }}",
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        640,
+        128
+      ],
+      "id": "0556be16-a9ad-4648-a59a-2b41a4c1fcd6",
+      "name": "Normalizar Feedback"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://openrouter.ai/api/v1/chat/completions",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "openRouterApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"openai/gpt-4o-mini\",\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": \"Você é um analista especialista em clima organizacional, cultura corporativa e análise de feedback anônimo de colaboradores. Seu objetivo é extrair insights claros, objetivos, padronizados e acionáveis para gestores de pequenas empresas.\"\n    },\n    {\n      \"role\": \"user\",\n      \"content\": \"Analise o feedback anônimo abaixo e retorne EXCLUSIVAMENTE um JSON válido, sem texto adicional.\\n\\nContexto:\\n- O feedback é anônimo\\n- Pode ser curto, emocional, confuso ou agressivo\\n- O campo \\\"tipo de feedback\\\" pode estar vazio ou incorreto\\n\\nDados do feedback:\\nSetor informado: {{ $json.setor }}\\nTipo informado (se houver): {{ $json.tipo_informado || \"não informado\" }}\\nTexto do feedback: {{ $json.feedback }}\\n\\nTarefas obrigatórias:\\n1. Detectar o sentimento predominante, considerando o conteúdo implícito.\\n2. Classificar automaticamente o tipo de feedback, mesmo que o tipo não tenha sido informado.\\n3. Identificar o tema principal e, se aplicável, até dois temas secundários.\\n4. Avaliar o nível de criticidade para a gestão, seguindo estas regras:\\n   - baixa: crítica leve, comentário informativo ou elogio que não demanda ação imediata\\n   - media: crítica relevante ou sugestão que pode impactar processos ou clima, recomendando atenção do gestor\\n   - alta: problema sério, reclamação ou risco para equipe/empresa que exige ação imediata\\n5. Gerar um resumo curto e objetivo para relatório semanal.\\n6. Sugerir uma possível ação gerencial (insight acionável).\\n\\nRegras obrigatórias:\\n- Não invente dados pessoais.\\n- Não suavize críticas.\\n- Seja objetivo.\\n- Sempre preencha todos os campos.\\n- Utilize EXATAMENTE os valores listados abaixo.\\n- Não utilize sinônimos, variações ortográficas ou acentuação diferente.\\n- Caso haja dúvida, escolha a opção MAIS PRÓXIMA dentro da lista permitida.\\n\\nClassificações permitidas (valores exatos):\\n\\nSentimento:\\n- positivo\\n- neutro\\n- negativo\\n\\nTipo de feedback:\\n- elogio\\n- sugestao\\n- problema\\n- reclamacao\\n\\nTemas possíveis (use os mais adequados):\\n- comunicacao\\n- lideranca\\n- sobrecarga\\n- processos\\n- metas\\n- tecnologia\\n- clima_organizacional\\n- falta_de_recursos\\n- autonomia\\n- reconhecimento\\n- treinamento\\n- atendimento_ao_cliente\\n- organizacao\\n- transparencia\\n- outros\\n\\nCriticidade:\\n- baixa\\n- media\\n- alta\\n\\nFormato de resposta (JSON obrigatório):\\n{\\n  \\\"sentimento\\\": \\\"\\\",\\n  \\\"tipo_classificado\\\": \\\"\\\",\\n  \\\"tema_principal\\\": \\\"\\\",\\n  \\\"temas_secundarios\\\": [],\\n  \\\"criticidade\\\": \\\"\\\",\\n  \\\"resumo_executivo\\\": \\\"\\\",\\n  \\\"insight_acionavel\\\": \\\"\\\"\\n}\"\n    }\n  ],\n  \"temperature\": 0.2\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        848,
+        128
+      ],
+      "id": "c4939302-8b3a-419a-b767-086782c40b82",
+      "name": "IA: Analisar Feedback",
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const content = $json.choices[0].message.content;\n\n// Remove possíveis ```json ou ``` que a IA possa ter colocado\nconst cleaned = content\n  .replace(/```json/g, '')\n  .replace(/```/g, '')\n  .trim();\n\nconst parsed = JSON.parse(cleaned);\n\nreturn {\n  json: {\n    sentimento: parsed.sentimento,\n    tipo_classificado: parsed.tipo_classificado,\n    tema_principal: parsed.tema_principal,\n    temas_secundarios: parsed.temas_secundarios || [],\n    criticidade: parsed.criticidade,\n    resumo_executivo: parsed.resumo_executivo,\n    insight_acionavel: parsed.insight_acionavel\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1088,
+        128
+      ],
+      "id": "964ab7b5-eb60-44af-ada2-460c415334a3",
+      "name": "Parsear Resposta da IA"
+    },
+    {
+      "parameters": {
+        "tableId": "feedback_analysis",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "feedback_id",
+              "fieldValue": "={{ $json.id }}"
+            },
+            {
+              "fieldId": "week",
+              "fieldValue": "={{ $('Normalizar Feedback').item.json.semana_do_mes }}"
+            },
+            {
+              "fieldId": "sentiment",
+              "fieldValue": "={{ $('Parsear Resposta da IA').item.json.sentimento }}"
+            },
+            {
+              "fieldId": "classified_type",
+              "fieldValue": "={{ $('Parsear Resposta da IA').item.json.tipo_classificado }}"
+            },
+            {
+              "fieldId": "main_theme",
+              "fieldValue": "={{ $('Parsear Resposta da IA').item.json.tema_principal }}"
+            },
+            {
+              "fieldId": "secondary_themes",
+              "fieldValue": "={{ $('Parsear Resposta da IA').item.json.temas_secundarios.length > 0 ? $('Parsear Resposta da IA').item.json.temas_secundarios : null }}"
+            },
+            {
+              "fieldId": "criticality",
+              "fieldValue": "={{ $('Parsear Resposta da IA').item.json.criticidade }}"
+            },
+            {
+              "fieldId": "executive_summary",
+              "fieldValue": "={{ $('Parsear Resposta da IA').item.json.resumo_executivo }}"
+            },
+            {
+              "fieldId": "actionable_insight",
+              "fieldValue": "={{ $('Parsear Resposta da IA').item.json.insight_acionavel }}"
+            },
+            {
+              "fieldId": "company_slug",
+              "fieldValue": "={{ $('Normalizar Feedback').item.json.slug_empresa }}"
+            },
+            {
+              "fieldId": "department",
+              "fieldValue": "={{ $('Normalizar Feedback').item.json.setor }}"
+            },
+            {
+              "fieldId": "year",
+              "fieldValue": "={{ $('Normalizar Feedback').item.json.ano }}"
+            },
+            {
+              "fieldId": "month",
+              "fieldValue": "={{ $('Normalizar Feedback').item.json.mes }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        1536,
+        128
+      ],
+      "id": "a4d8340f-5324-4e2d-90fb-ee0dc7d50b7b",
+      "name": "Salvar Análise do Feedback"
+    },
+    {
+      "parameters": {
+        "content": "## RECEBIMENTO DE DADOS\n\nEtapa de disparo e busca de dados pendentes no banco.",
+        "height": 180,
+        "width": 324,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "47a1cf0d-9d3a-4927-a4a6-12e7d30251b9",
+      "name": "🚀 Entrada"
+    },
+    {
+      "parameters": {
+        "content": "## PROCESSAMENTO\n\nEtapa de cálculo de semana e preparação dos dados para análise.",
+        "height": 180,
+        "width": 416,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        352,
+        0
+      ],
+      "id": "6ba4c583-11da-4a0f-ac96-edf3afca13ae",
+      "name": "⚙️ Processamento"
+    },
+    {
+      "parameters": {
+        "content": "##  ANÁLISE IA\n\nEtapa de envio para API de IA e tratamento da resposta.",
+        "height": 180,
+        "width": 400,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        816,
+        0
+      ],
+      "id": "bf7d754c-0191-4ee4-a7f1-72d54a717ef1",
+      "name": "🤖 Análise IA"
+    },
+    {
+      "parameters": {
+        "content": "## PERSISTÊNCIA\n\nEtapa de gravação dos resultados no Supabase.",
+        "height": 180,
+        "width": 440,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1280,
+        0
+      ],
+      "id": "e2d297d9-23c0-47b3-b794-92bf8a71d71a",
+      "name": "💾 Persistência"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "novo-feedback",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        96,
+        128
+      ],
+      "id": "5b65e411-fdcd-4305-826e-1c4d2d34d12c",
+      "name": "Webhook",
+      "webhookId": "e27d888a-98ee-49e4-b79e-d193c33a4c07"
+    },
+    {
+      "parameters": {
+        "tableId": "feedback_raw",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "company_slug",
+              "fieldValue": "={{ $('Normalizar Feedback').item.json.slug_empresa }}"
+            },
+            {
+              "fieldId": "department",
+              "fieldValue": "={{ $('Normalizar Feedback').item.json.setor }}"
+            },
+            {
+              "fieldId": "feedback_type",
+              "fieldValue": "={{ $('Normalizar Feedback').item.json.tipo_informado }}"
+            },
+            {
+              "fieldId": "feedback",
+              "fieldValue": "={{ $('Normalizar Feedback').item.json.feedback }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        1328,
+        128
+      ],
+      "id": "6e1c1b02-d7c6-4205-81a7-cf3da39a5739",
+      "name": "Salvar novo feedback"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Calcular Semana": {
+      "main": [
+        [
+          {
+            "node": "Normalizar Feedback",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalizar Feedback": {
+      "main": [
+        [
+          {
+            "node": "IA: Analisar Feedback",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IA: Analisar Feedback": {
+      "main": [
+        [
+          {
+            "node": "Parsear Resposta da IA",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parsear Resposta da IA": {
+      "main": [
+        [
+          {
+            "node": "Salvar novo feedback",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Calcular Semana",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Salvar novo feedback": {
+      "main": [
+        [
+          {
+            "node": "Salvar Análise do Feedback",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "2b35540a-cc0b-4ac1-a72b-c8a8a6c08904",
+  "meta": {
+    "instanceId": "8e49680a09686df7fb33f428974679a4ab99abc4f230d39ca1abd80d09a3a25e"
+  },
+  "id": "Aq--DbS1JcOvKpaguIydK",
+  "tags": []
+}
